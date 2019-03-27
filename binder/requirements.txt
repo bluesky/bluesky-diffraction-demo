@@ -1,6 +1,7 @@
 event-model >=1.8.0
 bluesky
 caproto
+databroker
 intake-bluesky >=0.1.0a2
 ipympl
 matplotlib
