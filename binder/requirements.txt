@@ -8,6 +8,6 @@ mongobox
 mongoquery
 ophyd
 suitcase-jsonl >=0.1.0
-suitcase-mongo >=0.1.0
+suitcase-mongo >=0.1.0b4
 suitcase-tiff
 tornado <5
