@@ -209,9 +209,6 @@ class TakeDarkFrames:
         self.max_age = max_age
         self.shutter = shutter
         
-    def clear(self):
-        self._dark_frame = None
-
     def __call__(self, plan):
 
         def insert_take_dark(msg):
