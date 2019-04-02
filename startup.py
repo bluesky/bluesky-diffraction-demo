@@ -109,6 +109,7 @@ class DarkFrameCache(Device):
         self.last_collected = None
         self.just_started = True
         self.update_done = False
+        self._assets_collected = True
         return super().__init__(*args, **kwargs)
 
     def read(self):
@@ -135,14 +136,13 @@ class DarkFrameCache(Device):
     #     return self.det.describe_configuration
 
     def collect_asset_docs(self):
-        # keep track of when we get restaged to restore these
-        yield from self._asset_docs_cache
-        self._really_cached = self._asset_docs_cache
-        self._asset_docs_cache = []
+        if self._assets_collected:
+            yield from []
+        else:
+            yield from self._asset_docs_cache
 
     def stage(self):
-        self._asset_docs_cache = self._really_cached
-
+        self._assets_collected = False
 
 def teleport(camera, dark_frame_cache):
     dark_frame_cache._describe = camera.describe()
@@ -173,7 +173,9 @@ class InsertReferenceToDarkFrame:
                 return (
                     bluesky.preprocessors.pchain(
                         bluesky.preprocessors.single_gen(msg),
-                        bps.trigger_and_read([self.dark_frame_cache], name='dark')
+                        bps.stage(self.dark_frame_cache),
+                        bps.trigger_and_read([self.dark_frame_cache], name='dark'),
+                        bps.unstage(self.dark_frame_cache)
                     ),
                     None,
                 )
