@@ -252,50 +252,85 @@ positions = {1: 10.3, 7: 20.1}
 # RE.subscribe(publisher)
 
 
-os.makedirs('exported', exist_ok=True)
+import event_model
 import suitcase.tiff_series
-serializer = None
-filler = None
-dark_descriptor = None
-primary_descriptor = None
-dark_frame = None
 
 
-def serialize(name, doc):
-    # A hack around the fact that RunRouter isn't ready yet
-    global serializer
-    global filler
-    global dark_descriptor
-    global primary_descriptor
-    global dark_frame
-    if name == 'start':
-        filler = Filler({'npy': handler})
-        serializer = suitcase.tiff_series.Serializer('exported')
-    filler(name, doc)
-    if name == 'descriptor' and doc['name'] == 'dark':
-        dark_descriptor = doc['uid']
-    elif name == 'descriptor' and doc['name'] == 'primary':
-        primary_descriptor = doc['uid']
-    elif name in ('datum', 'datum_page', 'resource'):
-        return
-    serializer(name, doc)
-    if name == 'event':
-        if doc['descriptor'] == dark_descriptor:
-            dark_frame = doc['data']['det_img']
-        elif doc['descriptor'] == primary_descriptor:
-            doc = doc.copy()
-            doc['data']['det_img'] = doc['data']['det_img'] = dark_frame
-    if name == 'stop':
-        serializer.close()
+class DarkSubtraction(event_model.DocumentRouter):
+    def __init__(self, *args, **kwargs):
+        self.dark_descriptor = None
+        self.primary_descriptor = None
+        self.dark_frame = None
+        super().__init__(*args, **kwargs)
+
+    def descriptor(self, doc):
+        if doc['name'] == 'dark':
+            self.dark_descriptor = doc['uid']
+        elif doc['name'] == 'primary':
+            self.primary_descriptor = doc['uid']
+        return super().descriptor(doc)
+
+    def event_page(self, doc):
+        # TODO We may be able to fill a page in place, and that may be more
+        # efficient than unpacking the page in to Events, filling them, and the
+        # re-packing a new page. But that seems tricky in general since the
+        # page may be implemented as a DataFrame or dict, etc.
+
+        event = self.event  # Avoid attribute lookup in hot loop.
+        filled_events = []
+
+        for event_doc in event_model.unpack_event_page(doc):
+            filled_events.append(event(event_doc))
+        new_event_page = event_model.pack_event_page(*filled_events)
+        # Modify original doc in place, as we do with 'event'.
+        doc['data'] = new_event_page['data']
+        return doc
+
+    def event(self, doc):
+        FIELD = 'det_img'  # TODO Do not hard-code this.
+        if doc['descriptor'] == self.dark_descriptor:
+            self.dark_frame = doc['data']['det_img']
+        if doc['descriptor'] == self.primary_descriptor:
+            doc['data'][FIELD] = self.subtract(doc['data'][FIELD], self.dark_frame)
+            print(doc['data'][FIELD].dtype)
+        return doc
+
+    def subtract(self, light, dark):
+        return numpy.clip(light - dark, a_min=0, a_max=None).astype(numpy.uint16)
 
 
-RE.subscribe(serialize)
+def factory(name, start_doc):
+    if start_doc.get('purpose') == 'test':
+        # i.e. RE(..., purpose='test')
+        return [], []
+    filler = Filler({'npy': handler})
+    filler(name, start_doc)  # modifies doc in place
+    dark_subtraction = DarkSubtraction()
+    dark_subtraction(name, start_doc)
+    raw_serializer = suitcase.tiff_series.Serializer('/tmp/demo/',
+            file_prefix='RAW-{start[uid]}-')
+    raw_serializer('start', start_doc)
+
+    def subfactory(name, descriptor_doc):
+        if descriptor_doc['name'] == 'primary':
+            serializer = suitcase.tiff_series.Serializer('/tmp/demo/')
+            serializer('start', start_doc)
+            serializer('descriptor', descriptor_doc)
+            return [serializer]
+        else:
+            return []
+    return [filler, raw_serializer, dark_subtraction], [subfactory]
 
 
-def multi_sample_count(samples):
+from event_model import RunRouter
+rr = RunRouter([factory])
+RE.subscribe(rr)
+
+
+def multi_sample_count(samples, *args, **kwargs):
     for index, sample_metadata in samples.items():
         yield from mv(motor1, positions[index])
-        yield from count([det], md=sample_metadata)
+        yield from count([det], *args, md=sample_metadata, **kwargs)
 
 
 def multi_sample_grid(samples, dx, dy, num_x, num_y):
@@ -314,8 +349,8 @@ def multi_sample_grid(samples, dx, dy, num_x, num_y):
 
 # Map human-friendly indexes to sample metadata. (Could be more than just a
 # name.) This could be parsed using pandas.read_excel.
-# samples = {1: {'composition': 'Ni', 'name': 'S1'},
-#            7: {'composition': 'LaB6', 'name': 'S1E'}}
+samples = {1: {'composition': 'Ni', 'name': 'S1'},
+           7: {'composition': 'LaB6', 'name': 'S1E'}}
 
 # RE(multi_sample_grid(samples, 1, 1, 3, 3))
 
