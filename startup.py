@@ -307,7 +307,7 @@ def factory(name, start_doc):
     def subfactory(name, descriptor_doc):
         if descriptor_doc['name'] == 'primary':
             serializer = suitcase.tiff_series.Serializer(
-                'exported/', file_prefix='{start[name]}-')
+                    'exported/', file_prefix='{start[name]}-{start[uid]:.8}-')
             serializer('start', start_doc)
             serializer('descriptor', descriptor_doc)
             return [serializer]
@@ -316,7 +316,7 @@ def factory(name, start_doc):
 
     # Uncomment this to export un-subtracted images as well.
     # raw_serializer = suitcase.tiff_series.Serializer('exported/',
-    #         file_prefix='RAW-{start[name]}-')
+    #         file_prefix='RAW-{start[name]}-{start[uid]:.8}-')
     # raw_serializer('start', start_doc)
     # return [filler, raw_serializer, dark_subtraction], [subfactory]
 
