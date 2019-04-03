@@ -297,23 +297,30 @@ def factory(name, start_doc):
     if start_doc.get('purpose') == 'test':
         # i.e. RE(..., purpose='test')
         return [], []
+    # Fill externally-stored data into Documents.
     filler = Filler({'npy': handler})
     filler(name, start_doc)  # modifies doc in place
+    # Do dark subtraction "in place".
     dark_subtraction = DarkSubtraction()
     dark_subtraction(name, start_doc)
-    raw_serializer = suitcase.tiff_series.Serializer('exported/',
-            file_prefix='RAW-{start[uid]}-')
-    raw_serializer('start', start_doc)
 
     def subfactory(name, descriptor_doc):
         if descriptor_doc['name'] == 'primary':
-            serializer = suitcase.tiff_series.Serializer('exported/')
+            serializer = suitcase.tiff_series.Serializer(
+                'exported/', file_prefix='{start[name]}-')
             serializer('start', start_doc)
             serializer('descriptor', descriptor_doc)
             return [serializer]
         else:
             return []
-    return [filler, raw_serializer, dark_subtraction], [subfactory]
+
+    # Uncomment this to export un-subtracted images as well.
+    # raw_serializer = suitcase.tiff_series.Serializer('exported/',
+    #         file_prefix='RAW-{start[name]}-')
+    # raw_serializer('start', start_doc)
+    # return [filler, raw_serializer, dark_subtraction], [subfactory]
+
+    return [filler, dark_subtraction], [subfactory]
 
 
 from event_model import RunRouter
