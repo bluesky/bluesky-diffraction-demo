@@ -271,11 +271,6 @@ class DarkSubtraction(event_model.DocumentRouter):
         return super().descriptor(doc)
 
     def event_page(self, doc):
-        # TODO We may be able to fill a page in place, and that may be more
-        # efficient than unpacking the page in to Events, filling them, and the
-        # re-packing a new page. But that seems tricky in general since the
-        # page may be implemented as a DataFrame or dict, etc.
-
         event = self.event  # Avoid attribute lookup in hot loop.
         filled_events = []
 
@@ -307,13 +302,13 @@ def factory(name, start_doc):
     filler(name, start_doc)  # modifies doc in place
     dark_subtraction = DarkSubtraction()
     dark_subtraction(name, start_doc)
-    raw_serializer = suitcase.tiff_series.Serializer('/tmp/demo/',
+    raw_serializer = suitcase.tiff_series.Serializer('exported/',
             file_prefix='RAW-{start[uid]}-')
     raw_serializer('start', start_doc)
 
     def subfactory(name, descriptor_doc):
         if descriptor_doc['name'] == 'primary':
-            serializer = suitcase.tiff_series.Serializer('/tmp/demo/')
+            serializer = suitcase.tiff_series.Serializer('exported/')
             serializer('start', start_doc)
             serializer('descriptor', descriptor_doc)
             return [serializer]
