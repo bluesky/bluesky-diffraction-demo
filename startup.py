@@ -287,7 +287,6 @@ class DarkSubtraction(event_model.DocumentRouter):
             self.dark_frame = doc['data']['det_img']
         if doc['descriptor'] == self.primary_descriptor:
             doc['data'][FIELD] = self.subtract(doc['data'][FIELD], self.dark_frame)
-            print(doc['data'][FIELD].dtype)
         return doc
 
     def subtract(self, light, dark):
