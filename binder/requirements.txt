@@ -1,4 +1,4 @@
-event-model >=1.9.0a1
+event-model >=1.9.0a2
 bluesky
 caproto
 databroker
@@ -10,5 +10,5 @@ mongoquery
 ophyd
 suitcase-jsonl >=0.1.0
 suitcase-mongo >=0.1.0b4
-suitcase-tiff
+suitcase-tiff >=0.1.3a1
 tornado <5
