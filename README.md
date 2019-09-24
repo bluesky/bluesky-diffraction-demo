@@ -22,7 +22,7 @@ pip install wheel
 **conda:**
 
 ```
-conda create -n bluesky-diffraction-demo
+conda create -n bluesky-diffraction-demo python=3.7
 conda activate bluesky-diffraction-demo
 ```
 
