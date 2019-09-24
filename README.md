@@ -10,7 +10,7 @@ a total scattering expperiment, developed for
 
 Create a virtual environment with venv or with conda.
 
-### venv
+**venv:**
 
 ```
 python -V  # must be 3.6 or higher
@@ -19,7 +19,7 @@ source ~/venv/bluesky-diffraction-demo/bin/activate
 pip install wheel
 ```
 
-### conda
+**conda:**
 
 ```
 conda create -n bluesky-diffraction-demo
