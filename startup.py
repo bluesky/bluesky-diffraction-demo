@@ -8,7 +8,7 @@ from ophyd.sim import motor1, motor2, motor
 from ophyd import Device, EpicsSignal, Component
 from ophyd.signal import EpicsSignalBase
 from ophyd.areadetector.filestore_mixins import resource_factory
-from databroker import Broker
+import databroker
 from bluesky.preprocessors import SupplementalData
 import bluesky.plan_stubs as bps
 import bluesky.preprocessors
@@ -17,11 +17,13 @@ import os
 import uuid
 from pathlib import Path
 import numpy
+from intake import open_catalog
 
-
-db = Broker.named('temp')  # WARNING will delete data at the end
+# Monkey-patch the databroker instead of using normal config discovery.
+databroker.catalog = open_catalog('catalog.yml')
+db = databroker.catalog['dmb']()
 RE = RunEngine({})
-RE.subscribe(db.insert)
+RE.subscribe(db.v1.insert)
 sd = SupplementalData()
 RE.preprocessors.append(sd)
 

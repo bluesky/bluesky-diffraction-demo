@@ -1,10 +1,7 @@
-plugins:
-  source:
-    - module: intake_bluesky
 sources:
-  xyz:                                                                          
+  dmb:                                                                          
     description: Some imaginary beamline
-    driver: intake_bluesky.mongo_normalized.BlueskyMongoCatalog
+    driver: bluesky-mongo-normalized-catalog
     container: catalog
     args:
       metadatastore_db: mongodb://localhost:27017/mds
