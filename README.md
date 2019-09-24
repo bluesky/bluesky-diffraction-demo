@@ -1,6 +1,7 @@
-# Dark Subtraction Demo
+# Bluesky Diffraction Demo
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/NSLS-II/dark-subtraction-demo/master?filepath=Demo%20with%20Dark%20Frame%20Correction%20and%20TIFF%20Export.ipynb)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/bluesky/bluesky-diffraction-demo/master?urlpath=lab)
 
-This is a demonstration using bluesky to acquire light frames and dark frames
-and to export dark-subtracted images as TIFF.
+This is a demonstration using bluesky and scientific Python libraries for
+a total scattering expperiment, developed for
+[US Total Scattering School](https://conference.sns.gov/event/184/).

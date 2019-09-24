@@ -1,14 +1,9 @@
-event-model >=1.9.0a3
-bluesky
+bluesky >=1.6.0rc2
 caproto
-databroker
-intake-bluesky >=0.1.0a3
+databroker >=1.0.0a5
 ipympl
 matplotlib
 mongobox
-mongoquery
 ophyd
-suitcase-jsonl >=0.1.0
-suitcase-mongo >=0.1.0b5
-suitcase-tiff >=0.1.3a1
-tornado <5
+suitcase-mongo
+suitcase-tiff
