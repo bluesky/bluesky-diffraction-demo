@@ -22,6 +22,17 @@ sd.baseline.extend([motor1, motor2, motor])
 RE.preprocessors.append(sd)
 
 
+def handler(resource_path, **kwargs):
+    resource_path = resource_path
+    
+    def get():
+        return numpy.load(resource_path)
+    return get   
+
+
+db.filler.handler_registry['npy'] = handler
+
+
 class ArraySignal(EpicsSignalBase):
     def __init__(self, read_pv, **kwargs):
         super().__init__(read_pv, **kwargs)
