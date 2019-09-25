@@ -1,3 +1,4 @@
+amostra
 bluesky >=1.6.0rc2
 caproto
 databroker >=1.0.0a5
