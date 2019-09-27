@@ -4,6 +4,7 @@ from ipywidgets import link
 from traitlets import HasTraits, Unicode, Float
 import uuid
 
+
 COLUMN_RATIO = [10, 10, 8]
 
 client = amostra.mongo_client.Client(
@@ -81,3 +82,31 @@ for row in range(metadata_sheet.rows):
     # uuid cell
     uuid_cell = cell(row, 2, value=' ')
     link((uuid_cell, 'value'), (work_list[row], 'uuid'))
+
+
+from bluesky.plans import count
+from bluesky.plan_stubs import mv
+from startup import det
+import time
+
+
+def plan_factory(work_list):
+    for r, w in enumerate(work_list):
+        time.sleep(3)
+        if all(check_list[r]):
+            print(f'Lock row {1+r} and \N{Rocket}')
+            for c in range(2):
+                tmp = cell(r,c, metadata_sheet[r,c].value, read_only=True)
+                #tmp = cell(r,c, '\N{Rocket}', read_only=True)
+
+            yield from mv(det.exp, w.scantime)
+            yield from count([det])
+        else:
+            print(f'Skip row {1+r}')
+    # Reset back to read_only = False
+    for r in range(len(work_list)):
+        for c in range(2):
+            tmp = cell(r,c, metadata_sheet[r,c].value, read_only=False)
+
+
+plans = plan_factory(work_list)
