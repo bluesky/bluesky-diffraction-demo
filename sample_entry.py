@@ -4,11 +4,12 @@ from ipywidgets import link
 from traitlets import HasTraits, Unicode, Float
 import uuid
 
+COLUMN_RATIO = [10, 10, 8]
 
 client = amostra.mongo_client.Client(
         f'mongodb://localhost:27017/test_amostra_ipysheet-{uuid.uuid4()!s}')
 
-samples_sheet = sheet(rows5=5, columns=3, column_width=[10, 10, 5],
+samples_sheet = sheet(rows5=5, columns=3, column_width=COLUMN_RATIO,
                       column_headers=['Sample Name', 'Composition', 'UUID'])
 for row in range(samples_sheet.rows):
     sample = client.samples.new(name=' ', composition=' ')
@@ -59,7 +60,7 @@ def check(change):
         cell(c.row_start, c.column_start, c.value, background_color='grey')
 
 
-metadata_sheet = sheet(rows=5, columns=3, column_width=[10, 10, 5],
+metadata_sheet = sheet(rows=5, columns=3, column_width=COLUMN_RATIO,
                        column_headers=['Sample Name', 'ScanTime', 'UUID'])
 work_list = [None, None, None, None, None]
 check_list = [[False, False],
