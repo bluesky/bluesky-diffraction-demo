@@ -122,16 +122,14 @@ def plan_factory(work_list):
     for r, w in enumerate(work_list):
         # If all field is legal, run plan
         if all(check_list[r]):
-            print(f'Lock row {1+r} and \N{Rocket}')
             time.sleep(1)
             for c in range(2):
-                tmp = metadata_sheet[r,c]
-                tmp.style = {'backgroundColor': 'lightblue'}
-                tmp.read_only = True
-                tmp.send_state()
+                metadata_sheet[r, c].style = {'backgroundColor': 'lightblue'}
+                metadata_sheet[r, c].read_only = True
                 global current_log_row
                 current_log_cell = log_sheet[current_log_row,c]
-                current_log_cell = cell(current_log_row, c, tmp.value)
+                current_log_cell = cell(current_log_row, c, metadata_sheet[r, c].value)
+            print(f'Row {1+r} locked and launch \N{Rocket}')
 
             current_log_row = current_log_row + 1
             yield from mv(det.exp, w.scantime)
