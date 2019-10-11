@@ -5,6 +5,7 @@ caproto
 databroker >=1.0.0a5
 ipympl
 ipysheet
+ipywidgets
 matplotlib
 mongobox
 ophyd >=1.4.0rc2
