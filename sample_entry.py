@@ -105,7 +105,7 @@ for row in range(metadata_sheet.rows):
 
 log_sheet = sheet(rows=1, columns=6, column_width=HISTORY_SHEET_COLUMN_RATIO,
                        column_headers=['Sample Name', 'ScanTime', 'Grid X', 'Grid Y', 'Image', ' '])
-log_sheet.layout.height = '1000px'
+#log_sheet.layout.height = '1000px'
 # sheet.layout.height = '300px'
 
 
@@ -190,8 +190,9 @@ def plan_factory(work_list):
             #cell(current_log_row, 1, value=None)
             #cell(current_log_row, 2, value=None)
             #cell(current_log_row, 3, value=None)
-            button = widgets.Button(description="Export",
-                                   layout=Layout(width='50%', height='25px', left= '100px', top = '100px'))
+            button = widgets.Button(description="",
+                                   layout=Layout(width='20%', height='20%'),
+                                   icon='save')
             button.on_click(export_full_image)
             #button.on_click(on_button_clicked)
             row_of_button[button] = current_log_row
