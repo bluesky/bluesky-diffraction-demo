@@ -10,16 +10,27 @@ import uuid
 from pathlib import Path
 import numpy
 from intake import open_catalog
+from bluesky_browser.artists.mpl.image import Image
+from bluesky_browser.heuristics.image import latest_frame
+import functools
+from event_model import RunRouter, Filler
+from bluesky.run_engine import Dispatcher
+from bluesky.utils import CallbackRegistry
+
+class DispatchingFiller(Filler, Dispatcher):
+    def __init__(self, handler, inplace):
+        super().__init__(handler, inplace=inplace)
+        super(Filler, self).__init__()
+    def __call__(self, name, doc):
+        name, doc = super().__call__(name, doc)  # returns a filled copy
+        self.process(name, doc)
+
+
+
 
 # Monkey-patch the databroker instead of using normal config discovery.
 databroker.catalog = open_catalog('catalog.yml')
 db = databroker.catalog['dmb']()
-RE = RunEngine({})
-RE.subscribe(db.v1.insert)
-
-sd = SupplementalData()
-sd.baseline.extend([motor1, motor2, motor])
-RE.preprocessors.append(sd)
 
 
 def handler(resource_path, **kwargs):
@@ -30,7 +41,36 @@ def handler(resource_path, **kwargs):
     return get   
 
 
+def factory(name, doc):
+    def subfactory(name, doc):
+        if doc['name'] == 'primary':
+            func = functools.partial(latest_frame, image_key='det_img')
+            image = Image(func, (480, 640))
+            return [image]
+        else:
+            return []
+    return [], [subfactory]
+
+
+
+
 db.filler.handler_registry['npy'] = handler
+RE = RunEngine({})
+RE.subscribe(db.v1.insert)
+dispatching_filler = DispatchingFiller(handler, inplace=False)
+dispatching_filler.subscribe(RunRouter([factory]))
+#RE.subscribe(dispatching_filler)
+
+
+# image = self.image_class(func, shape=shape, ax=ax, **self.imshow_options)
+# RE.subscribe(RunRouter([factory]))
+
+sd = SupplementalData()
+sd.baseline.extend([motor1, motor2, motor])
+RE.preprocessors.append(sd)
+
+
+
 
 
 class ArraySignal(EpicsSignalBase):
